@@ -2,71 +2,93 @@ import React, { useEffect, useState } from "react";
 
 function App() {
   const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  // Load courses on start
   useEffect(() => {
     fetch("http://localhost:5000/courses")
       .then((res) => res.json())
-      .then((data) => setCourses(data));
+      .then((data) => {
+        setCourses(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        alert("Failed to load courses from server");
+        setLoading(false);
+      });
   }, []);
 
+  // Enroll API
   const enrollCourse = (id) => {
     fetch(`http://localhost:5000/courses/${id}/enroll`, {
       method: "POST",
     })
       .then((res) => res.json())
-      .then(() => {
+      .then((data) => {
+        alert(data.message); // popup message
+
         setCourses((prev) =>
           prev.map((course) =>
             course.id === id ? { ...course, enrolled: true } : course
           )
         );
-      });
+      })
+      .catch(() => alert("Error enrolling in course"));
   };
+
+  if (loading) {
+    return (
+      <h2 style={{ textAlign: "center", marginTop: "50px" }}>
+        Loading Courses...
+      </h2>
+    );
+  }
 
   return (
     <div
       style={{
         padding: "30px",
-        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-        backgroundColor: "#f5f5f5",
+        fontFamily: "'Segoe UI', sans-serif",
+        backgroundColor: "#f3e5f5",
+
         minHeight: "100vh",
       }}
     >
       <h1 style={{ textAlign: "center", color: "#333" }}>Available Courses</h1>
+
       <div
         style={{
           display: "flex",
           gap: "20px",
           flexWrap: "wrap",
           justifyContent: "center",
-          marginTop: "30px",
+          marginTop: "40px",
         }}
       >
         {courses.map((course) => (
           <div
             key={course.id}
             style={{
-              backgroundColor: "#fff",
+              backgroundColor: "#e8f5e9",
+
               borderRadius: "10px",
-              padding: "20px",
-              width: "250px",
-              boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+              padding: "25px",
+              width: "260px",
+              boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
               textAlign: "center",
-              transition: "transform 0.2s",
             }}
-            className="course-card"
           >
-            <h3 style={{ color: "#333" }}>{course.name}</h3>
+            <h3 style={{ color: "#444" }}>{course.name}</h3>
+
             {course.enrolled ? (
               <button
                 style={{
                   marginTop: "15px",
                   padding: "10px 20px",
-                  border: "none",
-                  borderRadius: "5px",
                   backgroundColor: "#28a745",
                   color: "#fff",
-                  fontWeight: "bold",
+                  border: "none",
+                  borderRadius: "5px",
                   cursor: "not-allowed",
                 }}
                 disabled
@@ -79,20 +101,12 @@ function App() {
                 style={{
                   marginTop: "15px",
                   padding: "10px 20px",
-                  border: "none",
-                  borderRadius: "5px",
                   backgroundColor: "#007bff",
                   color: "#fff",
-                  fontWeight: "bold",
+                  border: "none",
+                  borderRadius: "5px",
                   cursor: "pointer",
-                  transition: "background-color 0.2s",
                 }}
-                onMouseOver={(e) =>
-                  (e.target.style.backgroundColor = "#0056b3")
-                }
-                onMouseOut={(e) =>
-                  (e.target.style.backgroundColor = "#007bff")
-                }
               >
                 Enroll
               </button>
